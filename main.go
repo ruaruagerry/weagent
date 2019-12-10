@@ -21,6 +21,7 @@ import (
 	_ "net/http/pprof"
 
 	_ "weagent/handles/auth"
+	_ "weagent/handles/setup"
 
 	log "github.com/sirupsen/logrus"
 )

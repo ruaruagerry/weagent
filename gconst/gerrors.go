@@ -35,6 +35,8 @@ const (
 	ErrCreateUUID = Error(12)
 	// ErrHTTP http请求失败
 	ErrHTTP = Error(13)
+	// ErrHTTPTooFast http请求太快
+	ErrHTTPTooFast = Error(14)
 
 	/* auth 100-199 */
 	// ErrAuthGetWexinUserInfo 获取微信用户信息失败
@@ -44,9 +46,15 @@ const (
 	// ErrAuthNotFindOpenID 没找到用户Openid
 	ErrAuthNotFindOpenID = Error(102)
 
-	/* shop 1000-1099 */
-	// ErrShopNotFindAddress 未找到收货地址
-	ErrShopNotFindAddress = Error(1000)
+	/* setup 1000-1099 */
+	// ErrSetupCardCode 身份证格式错误
+	ErrSetupCardCode = Error(1000)
+	// ErrSetupRealNick 身份证名称格式错误
+	ErrSetupRealNick = Error(1001)
+	// ErrSetupAlreadyRealCheck 已进行过实名认证
+	ErrSetupAlreadyRealCheck = Error(1002)
+	// ErrSetupExistCardCode 实名信息已存在
+	ErrSetupExistCardCode = Error(1003)
 )
 
 var errMsg = map[Error]string{
@@ -62,6 +70,8 @@ var errMsg = map[Error]string{
 	ErrTokenFormat:  "token格式错误",
 	ErrTokenExpired: "token已过期",
 	ErrCreateUUID:   "生成uuid失败",
+	ErrHTTP:         "http请求失败",
+	ErrHTTPTooFast:  "http请求太快",
 }
 
 // String 获得错误码描述信息
