@@ -1,7 +1,7 @@
 package rconst
 
 const (
-	// HashAccountPrefix account hash table
+	// HashAccountPrefix account hash table + playerid
 	HashAccountPrefix = "weagent:acc:"
 	// FieldAccUserID user id
 	FieldAccUserID = "id"
@@ -19,6 +19,13 @@ const (
 	FiledAccCreateTime = "createtime"
 	// FiledAccLoginTime 最后登录时间
 	FiledAccLoginTime = "logintime"
+
+	// HashAccountOpenIDPrefix + openid
+	HashAccountOpenIDPrefix = "weagent:acc:openid:"
+	// FieldAccOpenIDUserID user id
+	FieldAccOpenIDUserID = "id"
+	// FieldAccOpenIDOpenID account openID
+	FieldAccOpenIDOpenID = "openid"
 
 	// SetUsers 登录过的用户
 	SetUsers = "weagent:users"

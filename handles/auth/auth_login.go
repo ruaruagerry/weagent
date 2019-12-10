@@ -135,6 +135,9 @@ func loginHandle(c *server.StupidContext) {
 		rconst.FieldAccOpenID, row.OpenID,
 		rconst.FieldAccUnionID, row.UnionID)
 	conn.Send("SADD", rconst.SetUsers, playerid)
+	conn.Send("HMSET", rconst.HashAccountPrefix+row.OpenID,
+		rconst.FieldAccUserID, row.ID,
+		rconst.FieldAccUnionID, row.UnionID)
 	_, err = conn.Do("EXEC")
 	if err != nil {
 		httpRsp.Result = proto.Int32(int32(gconst.ErrRedis))

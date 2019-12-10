@@ -1,7 +1,6 @@
 package tables
 
 import (
-	"encoding/json"
 	"time"
 )
 
@@ -16,22 +15,4 @@ type Account struct {
 	SessionKey    string    `xorm:"session_key"`       // 微信SessionKey
 	CreateTime    time.Time `xorm:"created"`           // 创建时间
 	LastLoginTime time.Time `xorm:"updated"`           // 最后登录时间
-}
-
-// Encode 编码
-func (a *Account) Encode() string {
-	buf, err := json.Marshal(a)
-	if err != nil {
-		return "{}"
-	}
-	return string(buf)
-}
-
-// Decode 解码
-func (a *Account) Decode(data string) error {
-	err := json.Unmarshal([]byte(data), a)
-	if err != nil {
-		return err
-	}
-	return nil
 }
