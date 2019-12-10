@@ -1,9 +1,3 @@
-/*
- * @Author: lingguohua
- * @Date: 2019-08-12 20:04:14
- * @Description:
- */
-
 package gamecfg
 
 import (

@@ -1,11 +1,5 @@
 package server
 
-/*
- * @Author: zheng
- * @Date: 2019-08-09 09:22:06
- * @Description:
- */
-
 import (
 	"flag"
 	"fmt"

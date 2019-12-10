@@ -1,9 +1,3 @@
-/*
- * @Author: lingguohua
- * @Date: 2019-08-12 19:46:21
- * @Description:
- */
-
 package main
 
 import (

@@ -1,9 +1,3 @@
-/*
- * @Author: lingguohua
- * @Date: 2019-08-12 20:04:41
- * @Description:
- */
-
 // Package gamecfg 游戏的策划配置
 package gamecfg
 

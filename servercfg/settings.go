@@ -1,9 +1,3 @@
-/*
- * @Author: lingguohua
- * @Date: 2019-08-09 17:02:07
- * @Description:
- */
-
 // Package servercfg 游戏服务器运行配置
 package servercfg
 

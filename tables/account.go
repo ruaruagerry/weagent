@@ -1,11 +1,5 @@
 package tables
 
-/*
- * @Author: zheng
- * @Date: 2019-08-09 09:51:22
- * @Description:
- */
-
 import (
 	"encoding/json"
 	"time"
