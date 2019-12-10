@@ -19,6 +19,8 @@ const (
 	FiledAccCreateTime = "createtime"
 	// FiledAccLoginTime 最后登录时间
 	FiledAccLoginTime = "logintime"
+	// FieldAccPhone 手机号
+	FieldAccPhone = "phone"
 
 	// HashAccountOpenIDPrefix + openid
 	HashAccountOpenIDPrefix = "weagent:acc:openid:"
@@ -26,6 +28,8 @@ const (
 	FieldAccOpenIDUserID = "id"
 	// FieldAccOpenIDOpenID account openID
 	FieldAccOpenIDOpenID = "openid"
+	// FieldAccOpenIDPhone 手机号
+	FieldAccOpenIDPhone = "phone"
 
 	// SetUsers 登录过的用户
 	SetUsers = "weagent:users"

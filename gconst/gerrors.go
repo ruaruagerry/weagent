@@ -55,6 +55,20 @@ const (
 	ErrSetupAlreadyRealCheck = Error(1002)
 	// ErrSetupExistCardCode 实名信息已存在
 	ErrSetupExistCardCode = Error(1003)
+
+	/* phone 1100-1199 */
+	// ErrPhoneFormat 手机号格式错误
+	ErrPhoneFormat = Error(1100)
+	// ErrPhoneGetCodeFast 获取验证码过快
+	ErrPhoneGetCodeFast = Error(1101)
+	// ErrPhoneSendMsg 发送验证码失败
+	ErrPhoneSendMsg = Error(1102)
+	// ErrPhoneAlreadyBind 已绑定手机号
+	ErrPhoneAlreadyBind = Error(1103)
+	// ErrPhoneCode 验证码错误
+	ErrPhoneCode = Error(1104)
+	// ErrPhoneHasBinded 手机号码已被绑定
+	ErrPhoneHasBinded = Error(1105)
 )
 
 var errMsg = map[Error]string{

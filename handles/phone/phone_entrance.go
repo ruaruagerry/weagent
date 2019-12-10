@@ -1,4 +1,4 @@
-package money
+package phone
 
 import (
 	"encoding/json"
@@ -7,18 +7,16 @@ import (
 	"weagent/rconst"
 	"weagent/server"
 
-	"github.com/garyburd/redigo/redis"
 	"github.com/golang/protobuf/proto"
+	"github.com/gomodule/redigo/redis"
 )
 
 type entranceRsp struct {
-	Total       int64 `json:"total"`       // 总收益
-	Money       int64 `json:"money"`       // 当前账户余额
-	GetoutTotal int64 `json:"getouttotal"` // 总提现金额
+	Remain int32 `json:"remain"`
 }
 
 func entranceHandle(c *server.StupidContext) {
-	log := c.Log.WithField("func", "money.entranceHandle")
+	log := c.Log.WithField("func", "phone.entranceHandle")
 
 	httpRsp := pb.HTTPResponse{
 		Result: proto.Int32(int32(gconst.UnknownError)),
@@ -32,9 +30,7 @@ func entranceHandle(c *server.StupidContext) {
 
 	// redis multi get
 	conn.Send("MULTI")
-	conn.Send("HGET", rconst.HashMoneyPrefix+playerid, rconst.FieldMoneyTotal)
-	conn.Send("HGET", rconst.HashMoneyPrefix+playerid, rconst.FieldMoneyNum)
-	conn.Send("HGET", rconst.HashMoneyPrefix+playerid, rconst.FieldMoneyGetout)
+	conn.Send("TTL", rconst.StringPhoneGetCodeTagPrefix+playerid)
 	redisMDArray, err := redis.Values(conn.Do("EXEC"))
 	if err != nil {
 		httpRsp.Result = proto.Int32(int32(gconst.ErrRedis))
@@ -43,15 +39,15 @@ func entranceHandle(c *server.StupidContext) {
 		return
 	}
 
-	total, _ := redis.Int(redisMDArray[0], nil)
-	money, _ := redis.Int(redisMDArray[1], nil)
-	getouttotal, _ := redis.Int(redisMDArray[2], nil)
+	// do something
+	remain, _ := redis.Int(redisMDArray[0], nil)
+	if remain < 0 {
+		remain = 0
+	}
 
 	// rsp
 	rsp := &entranceRsp{
-		Total:       int64(total),
-		Money:       int64(money),
-		GetoutTotal: int64(getouttotal),
+		Remain: int32(remain),
 	}
 	data, err := json.Marshal(rsp)
 	if err != nil {

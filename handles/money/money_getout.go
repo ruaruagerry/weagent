@@ -9,7 +9,7 @@ import (
 )
 
 func getoutHandle(c *server.StupidContext) {
-	log := c.Log.WithField("func", "money.getoutHandle")
+	// log := c.Log.WithField("func", "money.getoutHandle")
 
 	httpRsp := pb.HTTPResponse{
 		Result: proto.Int32(int32(gconst.UnknownError)),

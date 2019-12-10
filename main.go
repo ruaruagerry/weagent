@@ -15,6 +15,8 @@ import (
 	_ "net/http/pprof"
 
 	_ "weagent/handles/auth"
+	_ "weagent/handles/money"
+	_ "weagent/handles/phone"
 	_ "weagent/handles/setup"
 
 	log "github.com/sirupsen/logrus"

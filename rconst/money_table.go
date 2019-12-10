@@ -12,6 +12,7 @@ const (
 	HashMoneyAdSeeNum = "weagent:money:adseenum"
 	// HashMoneyAdClickNum 点击广告次数
 	HashMoneyAdClickNum = "weagent:money:adclicknum"
+
 	// HashMoneyPrefix 钱包
 	HashMoneyPrefix = "weagent:money:"
 	// FieldMoneyNum 钱包余额
