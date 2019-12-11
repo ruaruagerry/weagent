@@ -69,6 +69,10 @@ const (
 	ErrPhoneCode = Error(1104)
 	// ErrPhoneHasBinded 手机号码已被绑定
 	ErrPhoneHasBinded = Error(1105)
+
+	/* money 1200-1299 */
+	// ErrMoneyInvalidGetout 提现金额错误
+	ErrMoneyInvalidGetout = Error(1200)
 )
 
 var errMsg = map[Error]string{
