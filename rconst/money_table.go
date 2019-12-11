@@ -8,6 +8,9 @@ const (
 	// FieldMoneyConfigSeeEarnings 看广告收益
 	FieldMoneyConfigSeeEarnings = "seeearnings"
 
+	// StringMoneyRemainSessNumPrefix 当日剩余观看广告次数
+	StringMoneyRemainSessNumPrefix = "weagent:money:remainseenum:"
+
 	// HashMoneyAdSeeNum 查看广告次数
 	HashMoneyAdSeeNum = "weagent:money:adseenum"
 	// HashMoneyAdClickNum 点击广告次数

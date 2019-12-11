@@ -3,6 +3,7 @@ package money
 import (
 	"encoding/json"
 	"weagent/gconst"
+	"weagent/gfunc"
 	"weagent/pb"
 	"weagent/rconst"
 	"weagent/server"
@@ -15,6 +16,7 @@ type entranceRsp struct {
 	Total       int64 `json:"total"`       // 总收益
 	Money       int64 `json:"money"`       // 当前账户余额
 	GetoutTotal int64 `json:"getouttotal"` // 总提现金额
+	RemainSee   int32 `json:"remainsee"`   // 剩余观看广告次数
 }
 
 func entranceHandle(c *server.StupidContext) {
@@ -35,6 +37,9 @@ func entranceHandle(c *server.StupidContext) {
 	conn.Send("HGET", rconst.HashMoneyPrefix+playerid, rconst.FieldMoneyTotal)
 	conn.Send("HGET", rconst.HashMoneyPrefix+playerid, rconst.FieldMoneyNum)
 	conn.Send("HGET", rconst.HashMoneyPrefix+playerid, rconst.FieldMoneyGetout)
+	conn.Send("EXISTS", rconst.StringMoneyRemainSessNumPrefix+playerid)
+	conn.Send("GET", rconst.StringMoneyRemainSessNumPrefix+playerid)
+	conn.Send("HGET", rconst.HashMoneyConfig, rconst.FieldMoneyConfigMaxAdNum)
 	redisMDArray, err := redis.Values(conn.Do("EXEC"))
 	if err != nil {
 		httpRsp.Result = proto.Int32(int32(gconst.ErrRedis))
@@ -46,6 +51,23 @@ func entranceHandle(c *server.StupidContext) {
 	total, _ := redis.Int(redisMDArray[0], nil)
 	money, _ := redis.Int(redisMDArray[1], nil)
 	getouttotal, _ := redis.Int(redisMDArray[2], nil)
+	existremain, _ := redis.Bool(redisMDArray[3], nil)
+	remainseenum, _ := redis.Int(redisMDArray[4], nil)
+	adseenum, _ := redis.Int(redisMDArray[5], nil)
+
+	// redis multi set
+	conn.Send("MULTI")
+	if !existremain {
+		remainseenum = adseenum
+		conn.Send("SETEX", rconst.StringMoneyRemainSessNumPrefix+playerid, gfunc.TomorrowZeroRemain(), remainseenum)
+	}
+	_, err = conn.Do("EXEC")
+	if err != nil {
+		httpRsp.Result = proto.Int32(int32(gconst.ErrRedis))
+		httpRsp.Msg = proto.String("统一存储缓存操作失败")
+		log.Errorf("code:%d msg:%s exec err, err:%s", httpRsp.GetResult(), httpRsp.GetMsg(), err.Error())
+		return
+	}
 
 	// rsp
 	rsp := &entranceRsp{

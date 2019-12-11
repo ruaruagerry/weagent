@@ -3,6 +3,7 @@ package money
 import (
 	"time"
 	"weagent/gconst"
+	"weagent/gfunc"
 	"weagent/pb"
 	"weagent/rconst"
 	"weagent/server"
@@ -57,6 +58,8 @@ func adSeeHandle(c *server.StupidContext) {
 	conn.Send("HGET", rconst.HashMoneyAdSeeNum, playerid)
 	conn.Send("HGET", rconst.HashMoneyPrefix+playerid, rconst.FieldMoneyNum)
 	conn.Send("HGET", rconst.HashMoneyPrefix+playerid, rconst.FieldMoneyTotal)
+	conn.Send("EXISTS", rconst.StringMoneyRemainSessNumPrefix+playerid)
+	conn.Send("GET", rconst.StringMoneyRemainSessNumPrefix+playerid)
 	redisMDArray, err = redis.Values(conn.Do("EXEC"))
 	if err != nil {
 		httpRsp.Result = proto.Int32(int32(gconst.ErrRedis))
@@ -70,10 +73,17 @@ func adSeeHandle(c *server.StupidContext) {
 	adseenum, _ := redis.Int(redisMDArray[2], nil)
 	moneynum, _ := redis.Int(redisMDArray[3], nil)
 	totalnum, _ := redis.Int(redisMDArray[4], nil)
+	existremain, _ := redis.Bool(redisMDArray[5], nil)
+	remainseenum, _ := redis.Int(redisMDArray[6], nil)
 
 	// do something
+	if !existremain {
+		remainseenum = maxadnum
+	}
+
 	// 超出最大广告收益次数，不做收益计算
-	if adseenum > maxadnum {
+	if remainseenum > 0 {
+		remainseenum--
 		moneynum += seeearnings
 		totalnum += seeearnings
 
@@ -94,13 +104,13 @@ func adSeeHandle(c *server.StupidContext) {
 			}
 		}()
 	}
-	adseenum++
 
 	// redis multi set
 	conn.Send("MULTI")
 	conn.Send("HSET", rconst.HashMoneyAdSeeNum, playerid, adseenum)
 	conn.Send("HSET", rconst.HashMoneyPrefix+playerid, rconst.FieldMoneyNum, moneynum)
 	conn.Send("HSET", rconst.HashMoneyPrefix+playerid, rconst.FieldMoneyTotal, totalnum)
+	conn.Send("SETEX", rconst.StringMoneyRemainSessNumPrefix+playerid, gfunc.TomorrowZeroRemain(), remainseenum)
 	_, err = conn.Do("EXEC")
 	if err != nil {
 		httpRsp.Result = proto.Int32(int32(gconst.ErrRedis))
