@@ -87,15 +87,23 @@ func connect(addr string, name string, account string, password string) (*xorm.E
 // createTables 创建业务表
 func createTables(engine *xorm.Engine) error {
 	account := &tables.Account{}
+	getoutrecord := &tables.Getoutrecord{}
+	adrecord := &tables.Adrecord{}
 
 	// 创建表
-	if err := engine.CreateTables(account); err != nil {
+	if err := engine.CreateTables(
+		account,
+		getoutrecord,
+		adrecord); err != nil {
 		log.Panicf("CreateTable Player err:%v", err)
 		return err
 	}
 
 	// 同步表结构
-	if err := engine.Sync2(account); err != nil {
+	if err := engine.Sync2(
+		account,
+		getoutrecord,
+		adrecord); err != nil {
 		log.Panicf("Syn2 Tables err:%v", err)
 		return err
 	}

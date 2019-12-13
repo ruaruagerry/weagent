@@ -60,6 +60,7 @@ func adSeeHandle(c *server.StupidContext) {
 	conn.Send("HGET", rconst.HashMoneyPrefix+playerid, rconst.FieldMoneyTotal)
 	conn.Send("EXISTS", rconst.StringMoneyRemainSessNumPrefix+playerid)
 	conn.Send("GET", rconst.StringMoneyRemainSessNumPrefix+playerid)
+	conn.Send("HGET", rconst.HashAccountPrefix+playerid, rconst.FieldAccName)
 	redisMDArray, err = redis.Values(conn.Do("EXEC"))
 	if err != nil {
 		httpRsp.Result = proto.Int32(int32(gconst.ErrRedis))
@@ -75,6 +76,7 @@ func adSeeHandle(c *server.StupidContext) {
 	totalnum, _ := redis.Int(redisMDArray[4], nil)
 	existremain, _ := redis.Bool(redisMDArray[5], nil)
 	remainseenum, _ := redis.Int(redisMDArray[6], nil)
+	name, _ := redis.String(redisMDArray[7], nil)
 
 	// do something
 	if !existremain {
@@ -92,7 +94,8 @@ func adSeeHandle(c *server.StupidContext) {
 			adrecord := &tables.Adrecord{
 				ID:         playerid,
 				Earnings:   int64(seeearnings),
-				Money:      int64(moneynum),
+				Name:       name,
+				AdMoney:    int64(moneynum),
 				CreateTime: nowtime,
 			}
 			_, err = db.Insert(adrecord)

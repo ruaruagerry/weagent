@@ -5,9 +5,11 @@ import (
 	"time"
 	"weagent/gconst"
 	"weagent/pb"
+	"weagent/rconst"
 	"weagent/server"
 	"weagent/tables"
 
+	"github.com/garyburd/redigo/redis"
 	"github.com/golang/protobuf/proto"
 )
 
@@ -44,16 +46,31 @@ func getoutApplyHandle(c *server.StupidContext) {
 	}
 
 	db := c.DbConn
+	conn := c.RedisConn
 	playerid := c.UserID
 	nowtime := time.Now()
+
+	// redis multi get
+	conn.Send("MULTI")
+	conn.Send("HGET", rconst.HashAccountPrefix+playerid, rconst.FieldAccName)
+	redisMDArray, err := redis.Values(conn.Do("EXEC"))
+	if err != nil {
+		httpRsp.Result = proto.Int32(int32(gconst.ErrRedis))
+		httpRsp.Msg = proto.String("统一获取缓存操作失败")
+		log.Errorf("code:%d msg:%s redisMDArray Values err, err:%s", httpRsp.GetResult(), httpRsp.GetMsg(), err.Error())
+		return
+	}
+
+	name, _ := redis.String(redisMDArray[0], nil)
 
 	// 插入收益记录
 	go func() {
 		getoutrecord := &tables.Getoutrecord{
-			ID:         playerid,
-			Money:      req.GetoutMoney,
-			CreateTime: nowtime,
-			Status:     tables.GetoutStatusReview,
+			ID:          playerid,
+			GetoutMoney: req.GetoutMoney,
+			CreateTime:  nowtime,
+			Status:      tables.GetoutStatusReview,
+			Name:        name,
 		}
 		_, err := db.Insert(getoutrecord)
 		if err != nil {
