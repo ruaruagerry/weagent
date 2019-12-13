@@ -51,7 +51,7 @@ func adRecordHandle(c *server.StupidContext) {
 	playerid := c.UserID
 
 	adrecords := []*tables.Adrecord{}
-	err := db.Where("playerid = ?", playerid).Limit(end, start).Find(&adrecords)
+	err := db.Where("id = ?", playerid).Limit(end, start).Find(&adrecords)
 	if err != nil {
 		httpRsp.Result = proto.Int32(int32(gconst.ErrDB))
 		httpRsp.Msg = proto.String("查询广告收益记录失败")
