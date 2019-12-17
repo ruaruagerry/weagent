@@ -50,10 +50,34 @@ func getoutApplyHandle(c *server.StupidContext) {
 	playerid := c.UserID
 	nowtime := time.Now()
 
+	// 检查
+	conn.Send("MULTI")
+	conn.Send("SETNX", rconst.StringLockMoneyGetoutApplyPrefix+playerid, "1")
+	conn.Send("EXPIRE", rconst.StringLockMoneyGetoutApplyPrefix+playerid, rconst.LockTime)
+	redisMDArray, err := redis.Values(conn.Do("EXEC"))
+	if err != nil {
+		httpRsp.Result = proto.Int32(int32(gconst.ErrRedis))
+		httpRsp.Msg = proto.String("请求锁获取缓存失败")
+		log.Errorf("code:%d msg:%s, GET lock redis data error:(%s)", httpRsp.GetResult(), httpRsp.GetMsg(), err.Error())
+		return
+	}
+	locktag, _ := redis.Int(redisMDArray[0], nil)
+	if locktag == 0 {
+		httpRsp.Result = proto.Int32(int32(gconst.ErrHTTPTooFast))
+		httpRsp.Msg = proto.String("请求过于频繁")
+		log.Errorf("code:%d msg:%s, request too fast", httpRsp.GetResult(), httpRsp.GetMsg())
+		return
+	}
+
+	defer func() {
+		conn.Do("DEL", rconst.StringLockMoneyGetoutApplyPrefix+playerid)
+	}()
+
 	// redis multi get
 	conn.Send("MULTI")
 	conn.Send("HGET", rconst.HashAccountPrefix+playerid, rconst.FieldAccName)
-	redisMDArray, err := redis.Values(conn.Do("EXEC"))
+	conn.Send("HGET", rconst.HashMoneyPrefix+playerid, rconst.FieldMoneyNum)
+	redisMDArray, err = redis.Values(conn.Do("EXEC"))
 	if err != nil {
 		httpRsp.Result = proto.Int32(int32(gconst.ErrRedis))
 		httpRsp.Msg = proto.String("统一获取缓存操作失败")
@@ -62,24 +86,43 @@ func getoutApplyHandle(c *server.StupidContext) {
 	}
 
 	name, _ := redis.String(redisMDArray[0], nil)
+	moneynum, _ := redis.Int64(redisMDArray[1], nil)
 
-	// 插入收益记录
-	go func() {
-		getoutrecord := &tables.Getoutrecord{
-			ID:          playerid,
-			GetoutMoney: req.GetoutMoney,
-			CreateTime:  nowtime,
-			Status:      tables.GetoutStatusReview,
-			Name:        name,
-		}
-		_, err := db.Insert(getoutrecord)
-		if err != nil {
-			httpRsp.Result = proto.Int32(int32(gconst.ErrDB))
-			httpRsp.Msg = proto.String("提现记录插入失败")
-			log.Errorf("code:%d msg:%s getoutrecord insert err, err:%s", httpRsp.GetResult(), httpRsp.GetMsg(), err.Error())
-			return
-		}
-	}()
+	if moneynum < req.GetoutMoney {
+		httpRsp.Result = proto.Int32(int32(gconst.ErrMoneyNotEnough))
+		httpRsp.Msg = proto.String("提现金额不足")
+		log.Errorf("code:%d msg:%s money not enough, moneynum:%d getout:%d", httpRsp.GetResult(), httpRsp.GetMsg(), moneynum, req.GetoutMoney)
+		return
+	}
+
+	moneynum -= req.GetoutMoney
+
+	// 插入提现记录
+	getoutrecord := &tables.Getoutrecord{
+		ID:          playerid,
+		GetoutMoney: req.GetoutMoney,
+		CreateTime:  nowtime,
+		Status:      tables.GetoutStatusReview,
+		Name:        name,
+	}
+	_, err = db.Insert(getoutrecord)
+	if err != nil {
+		httpRsp.Result = proto.Int32(int32(gconst.ErrDB))
+		httpRsp.Msg = proto.String("提现记录插入失败")
+		log.Errorf("code:%d msg:%s getoutrecord insert err, err:%s", httpRsp.GetResult(), httpRsp.GetMsg(), err.Error())
+		return
+	}
+
+	// redis multi set
+	conn.Send("MULTI")
+	conn.Send("HSET", rconst.HashMoneyPrefix+playerid, rconst.FieldMoneyNum, moneynum)
+	_, err = conn.Do("EXEC")
+	if err != nil {
+		httpRsp.Result = proto.Int32(int32(gconst.ErrRedis))
+		httpRsp.Msg = proto.String("统一存储缓存操作失败")
+		log.Errorf("code:%d msg:%s exec err, err:%s", httpRsp.GetResult(), httpRsp.GetMsg(), err.Error())
+		return
+	}
 
 	// rsp
 	httpRsp.Result = proto.Int32(int32(gconst.Success))

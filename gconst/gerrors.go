@@ -73,6 +73,8 @@ const (
 	/* money 1200-1299 */
 	// ErrMoneyInvalidGetout 提现金额错误
 	ErrMoneyInvalidGetout = Error(1200)
+	// ErrMoneyNotEnough 提现金额不足
+	ErrMoneyNotEnough = Error(1201)
 )
 
 var errMsg = map[Error]string{
