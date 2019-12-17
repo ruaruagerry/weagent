@@ -20,5 +20,6 @@ type Getoutrecord struct {
 	Name        string    `xorm:"name" json:"name"`               // 用户昵称
 	GetoutMoney int64     `xorm:"getoutmoney" json:"getoutmoney"` // 提现金额
 	CreateTime  time.Time `xorm:"createtime" json:"createtime"`   // 创建时间
+	ResultTime  time.Time `xorm:"resulttime" json:"resulttime"`   // 处理时间
 	Status      int32     `xorm:"status" json:"status"`           // 提现状态
 }
