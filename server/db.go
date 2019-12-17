@@ -89,12 +89,15 @@ func createTables(engine *xorm.Engine) error {
 	account := &tables.Account{}
 	getoutrecord := &tables.Getoutrecord{}
 	adrecord := &tables.Adrecord{}
+	webaccount := &tables.Webaccount{}
 
 	// 创建表
 	if err := engine.CreateTables(
 		account,
 		getoutrecord,
-		adrecord); err != nil {
+		adrecord,
+		webaccount,
+	); err != nil {
 		log.Panicf("CreateTable Player err:%v", err)
 		return err
 	}
@@ -103,7 +106,9 @@ func createTables(engine *xorm.Engine) error {
 	if err := engine.Sync2(
 		account,
 		getoutrecord,
-		adrecord); err != nil {
+		adrecord,
+		webaccount,
+	); err != nil {
 		log.Panicf("Syn2 Tables err:%v", err)
 		return err
 	}
