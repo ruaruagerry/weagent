@@ -50,6 +50,7 @@ func loginHandle(c *server.StupidContext) {
 
 	log.Info("loginHandle enter, req:", string(c.Body))
 
+	db := c.DbConn
 	conn := c.RedisConn
 	nowtime := time.Now()
 
@@ -79,7 +80,7 @@ func loginHandle(c *server.StupidContext) {
 
 	// db操作
 	row := &tables.Account{OpenID: userinfo.OpenID}
-	_, err = c.DbConn.Get(row)
+	_, err = db.Get(row)
 	if err != nil {
 		httpRsp.Result = proto.Int32(int32(gconst.ErrDB))
 		httpRsp.Msg = proto.String("查询用户信息失败")
@@ -96,7 +97,7 @@ func loginHandle(c *server.StupidContext) {
 		row.UnionID = userinfo.UnionID
 		row.SessionKey = loadAccessTokenReply.SessionKey
 		row.LastLoginTime = nowtime
-		_, err := c.DbConn.Where("open_id = ?", userinfo.OpenID).Update(row)
+		_, err := db.Where("open_id = ?", userinfo.OpenID).Update(row)
 		if err != nil {
 			httpRsp.Result = proto.Int32(int32(gconst.ErrDB))
 			httpRsp.Msg = proto.String("更新用户信息失败")
@@ -113,7 +114,7 @@ func loginHandle(c *server.StupidContext) {
 			SessionKey: loadAccessTokenReply.SessionKey,
 			CreateTime: nowtime,
 		}
-		_, err := c.DbConn.Insert(row)
+		_, err := db.Insert(row)
 		if err != nil {
 			httpRsp.Result = proto.Int32(int32(gconst.ErrParse))
 			httpRsp.Msg = proto.String("插入用户信息失败")
