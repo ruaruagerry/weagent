@@ -9,6 +9,6 @@ func init() {
 	server.RegisterGetHandle("/money/ad/click", adClickHandle)            // 点击广告上报
 	server.RegisterPostHandle("/money/ad/record", adRecordHandle)         // 查看广告收益记录
 	server.RegisterGetHandle("/money/entrance", entranceHandle)           // 主界面
-	server.RegisterGetHandle("/money/getout/apply", getoutApplyHandle)    // 提现申请
+	server.RegisterPostHandle("/money/getout/apply", getoutApplyHandle)   // 提现申请
 	server.RegisterPostHandle("/money/getout/record", getoutRecordHandle) // 查看提现记录
 }
