@@ -26,7 +26,8 @@ func adSeeHandle(c *server.StupidContext) {
 	conn := c.RedisConn
 	db := c.DbConn
 	playerid := c.UserID
-	nowtime := time.Now()
+	timenow := time.Now()
+	nowkey := timenow.Format("2006-01-02")
 
 	// 检查
 	conn.Send("MULTI")
@@ -61,6 +62,9 @@ func adSeeHandle(c *server.StupidContext) {
 	conn.Send("EXISTS", rconst.StringMoneyRemainSessNumPrefix+playerid)
 	conn.Send("GET", rconst.StringMoneyRemainSessNumPrefix+playerid)
 	conn.Send("HGET", rconst.HashAccountPrefix+playerid, rconst.FieldAccName)
+	conn.Send("GET", rconst.StringDataDayEarningsPrefix+nowkey)
+	conn.Send("GET", rconst.StringDataEarnings)
+	conn.Send("GET", rconst.StringDataDayAdNumPrefix+nowkey)
 	redisMDArray, err = redis.Values(conn.Do("EXEC"))
 	if err != nil {
 		httpRsp.Result = proto.Int32(int32(gconst.ErrRedis))
@@ -77,6 +81,9 @@ func adSeeHandle(c *server.StupidContext) {
 	existremain, _ := redis.Bool(redisMDArray[5], nil)
 	remainseenum, _ := redis.Int(redisMDArray[6], nil)
 	name, _ := redis.String(redisMDArray[7], nil)
+	todayall, _ := redis.Int(redisMDArray[8], nil)
+	historyall, _ := redis.Int(redisMDArray[9], nil)
+	todayadnum, _ := redis.Int(redisMDArray[10], nil)
 
 	// do something
 	if !existremain {
@@ -84,10 +91,13 @@ func adSeeHandle(c *server.StupidContext) {
 	}
 
 	// 超出最大广告收益次数，不做收益计算
+	todayadnum++
 	if remainseenum > 0 {
 		remainseenum--
 		moneynum += seeearnings
 		totalnum += seeearnings
+		todayall += seeearnings
+		historyall += seeearnings
 
 		// 插入收益记录
 		go func() {
@@ -96,7 +106,7 @@ func adSeeHandle(c *server.StupidContext) {
 				Earnings:   int64(seeearnings),
 				Name:       name,
 				AdMoney:    int64(moneynum),
-				CreateTime: nowtime,
+				CreateTime: timenow,
 			}
 			_, err = db.Insert(adrecord)
 			if err != nil {
@@ -114,6 +124,9 @@ func adSeeHandle(c *server.StupidContext) {
 	conn.Send("HSET", rconst.HashMoneyPrefix+playerid, rconst.FieldMoneyNum, moneynum)
 	conn.Send("HSET", rconst.HashMoneyPrefix+playerid, rconst.FieldMoneyTotal, totalnum)
 	conn.Send("SETEX", rconst.StringMoneyRemainSessNumPrefix+playerid, gfunc.TomorrowZeroRemain(), remainseenum)
+	conn.Send("SETEX", rconst.StringDataDayEarningsPrefix+nowkey, 2*24*3600, todayall)
+	conn.Send("SET", rconst.StringDataEarnings, historyall)
+	conn.Send("SETEX", rconst.StringDataDayAdNumPrefix+nowkey, 2*24*3600, todayadnum)
 	_, err = conn.Do("EXEC")
 	if err != nil {
 		httpRsp.Result = proto.Int32(int32(gconst.ErrRedis))
