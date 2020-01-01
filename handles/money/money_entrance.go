@@ -13,10 +13,10 @@ import (
 )
 
 type entranceRsp struct {
-	Total       int64 `json:"total"`       // 总收益
-	Money       int64 `json:"money"`       // 当前账户余额
-	GetoutTotal int64 `json:"getouttotal"` // 总提现金额
-	RemainSee   int32 `json:"remainsee"`   // 剩余观看广告次数
+	Total       float32 `json:"total"`       // 总收益
+	Money       float32 `json:"money"`       // 当前账户余额
+	GetoutTotal float32 `json:"getouttotal"` // 总提现金额
+	RemainSee   int32   `json:"remainsee"`   // 剩余观看广告次数
 }
 
 func entranceHandle(c *server.StupidContext) {
@@ -71,9 +71,10 @@ func entranceHandle(c *server.StupidContext) {
 
 	// rsp
 	rsp := &entranceRsp{
-		Total:       int64(total),
-		Money:       int64(money),
-		GetoutTotal: int64(getouttotal),
+		Total:       float32(total) / float32(100),
+		Money:       float32(money) / float32(100),
+		GetoutTotal: float32(getouttotal) / float32(100),
+		RemainSee:   int32(remainseenum),
 	}
 	data, err := json.Marshal(rsp)
 	if err != nil {
