@@ -41,7 +41,7 @@ func realModifyHandle(c *server.StupidContext) {
 	// 检查
 	conn.Send("MULTI")
 	conn.Send("SETNX", rconst.StringLockRealModifyHandlePrefix+playerid, "1")
-	conn.Send("EXPIRE", rconst.StringLockRealModifyHandlePrefix+playerid, rconst.LockTime)
+	conn.Send("EXPIRE", rconst.StringLockRealModifyHandlePrefix+playerid, gconst.LockTime)
 	redisMDArray, err := redis.Values(conn.Do("EXEC"))
 	if err != nil {
 		httpRsp.Result = proto.Int32(int32(gconst.ErrRedis))

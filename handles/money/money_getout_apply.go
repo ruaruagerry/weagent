@@ -53,7 +53,7 @@ func getoutApplyHandle(c *server.StupidContext) {
 	// 检查
 	conn.Send("MULTI")
 	conn.Send("SETNX", rconst.StringLockMoneyGetoutApplyPrefix+playerid, "1")
-	conn.Send("EXPIRE", rconst.StringLockMoneyGetoutApplyPrefix+playerid, rconst.LockTime)
+	conn.Send("EXPIRE", rconst.StringLockMoneyGetoutApplyPrefix+playerid, gconst.LockTime)
 	redisMDArray, err := redis.Values(conn.Do("EXEC"))
 	if err != nil {
 		httpRsp.Result = proto.Int32(int32(gconst.ErrRedis))

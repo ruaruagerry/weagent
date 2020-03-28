@@ -1,9 +1,6 @@
 package rconst
 
 const (
-	// LockTime 锁的时限
-	LockTime = 10
-
 	/* ---------- setup ---------- */
 
 	// StringLockRealModifyHandlePrefix 实名认证锁
@@ -17,6 +14,13 @@ const (
 	StringLockMoneyAdClickPrefix = "weagent:lock:moneyadclick:"
 	// StringLockMoneyGetoutApplyPrefix 申请提现锁
 	StringLockMoneyGetoutApplyPrefix = "weagent:lock:moneygetoutapply:"
-	// StringLockMoneyGetoutResultPrefix 提现审核锁
-	StringLockMoneyGetoutResultPrefix = "weagent:lock:moneygetoutresult:"
+
+	/* ---------- game ---------- */
+
+	// StringLockGameRebirthGetPrefix 获取重生次数锁
+	StringLockGameRebirthGetPrefix = "weagent:lock:rebirthget:"
+	// StringLockGameRebirthUsePrefix 消耗重生次数锁
+	StringLockGameRebirthUsePrefix = "weagent:lock:rebirthuse:"
+	// StringLockGameScoreUpdatePrefix 更新玩家分数锁
+	StringLockGameScoreUpdatePrefix = "weagent:lock:scoreupdate:"
 )

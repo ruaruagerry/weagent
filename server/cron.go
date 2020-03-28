@@ -11,9 +11,9 @@ func CronJob() {
 
 	cron := cron.New()
 
-	//
-	cron.AddFunc("0 0 22 * * ?", func() {
-		// SendArenaRewardMail(pool.Get(), dbConnect, mqChannel)
+	// 12点略微延后一点
+	cron.AddFunc("1 0 0 * * ?", func() {
+		cronData(pool.Get(), dbConnect)
 	})
 
 	cron.Start()

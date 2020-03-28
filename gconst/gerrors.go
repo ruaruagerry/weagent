@@ -75,6 +75,10 @@ const (
 	ErrMoneyInvalidGetout = Error(1200)
 	// ErrMoneyNotEnough 提现金额不足
 	ErrMoneyNotEnough = Error(1201)
+
+	/* game 1300-1399 */
+	// ErrRebirtNumNotEnough 复活次数不足
+	ErrRebirtNumNotEnough = Error(1300)
 )
 
 var errMsg = map[Error]string{

@@ -26,7 +26,7 @@ func adClickHandle(c *server.StupidContext) {
 	// 检查
 	conn.Send("MULTI")
 	conn.Send("SETNX", rconst.StringLockMoneyAdClickPrefix+playerid, "1")
-	conn.Send("EXPIRE", rconst.StringLockMoneyAdClickPrefix+playerid, rconst.LockTime)
+	conn.Send("EXPIRE", rconst.StringLockMoneyAdClickPrefix+playerid, gconst.LockTime)
 	redisMDArray, err := redis.Values(conn.Do("EXEC"))
 	if err != nil {
 		httpRsp.Result = proto.Int32(int32(gconst.ErrRedis))
@@ -43,7 +43,7 @@ func adClickHandle(c *server.StupidContext) {
 	}
 
 	defer func() {
-		conn.Do("DEL", rconst.StringLockMoneyAdSeePrefix+playerid)
+		conn.Do("DEL", rconst.StringLockMoneyAdClickPrefix+playerid)
 	}()
 
 	// redis multi set

@@ -10,9 +10,9 @@
 package rconst
 
 const (
-	// StringDataEarnings 全网总收益
+	// StringDataEarnings 全网总收益（单位分）
 	StringDataEarnings = "weagent:data:earnings"
-	// StringDataDayEarningsPrefix 全网当日收益
+	// StringDataDayEarningsPrefix 全网当日收益（单位分）
 	StringDataDayEarningsPrefix = "weagent:data:dayearnings:"
 	// StringDataDayAdNumPrefix 全网当日看广告总数
 	StringDataDayAdNumPrefix = "weagent:data:dayadnum:"
