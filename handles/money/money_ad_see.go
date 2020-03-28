@@ -32,7 +32,7 @@ func adSeeHandle(c *server.StupidContext) {
 	// 检查
 	conn.Send("MULTI")
 	conn.Send("SETNX", rconst.StringLockMoneyAdSeePrefix+playerid, "1")
-	conn.Send("EXPIRE", rconst.StringLockMoneyAdSeePrefix+playerid, rconst.LockTime)
+	conn.Send("EXPIRE", rconst.StringLockMoneyAdSeePrefix+playerid, gconst.LockTime)
 	redisMDArray, err := redis.Values(conn.Do("EXEC"))
 	if err != nil {
 		httpRsp.Result = proto.Int32(int32(gconst.ErrRedis))
@@ -63,7 +63,6 @@ func adSeeHandle(c *server.StupidContext) {
 	conn.Send("GET", rconst.StringMoneyRemainSessNumPrefix+playerid)
 	conn.Send("HGET", rconst.HashAccountPrefix+playerid, rconst.FieldAccName)
 	conn.Send("GET", rconst.StringDataDayEarningsPrefix+nowkey)
-	conn.Send("GET", rconst.StringDataEarnings)
 	conn.Send("GET", rconst.StringDataDayAdNumPrefix+nowkey)
 	redisMDArray, err = redis.Values(conn.Do("EXEC"))
 	if err != nil {
@@ -82,8 +81,7 @@ func adSeeHandle(c *server.StupidContext) {
 	remainseenum, _ := redis.Int(redisMDArray[6], nil)
 	name, _ := redis.String(redisMDArray[7], nil)
 	todayall, _ := redis.Int(redisMDArray[8], nil)
-	historyall, _ := redis.Int(redisMDArray[9], nil)
-	todayadnum, _ := redis.Int(redisMDArray[10], nil)
+	todayadnum, _ := redis.Int(redisMDArray[9], nil)
 
 	// do something
 	if !existremain {
@@ -97,7 +95,6 @@ func adSeeHandle(c *server.StupidContext) {
 		moneynum += seeearnings
 		totalnum += seeearnings
 		todayall += seeearnings
-		historyall += seeearnings
 
 		// 插入收益记录
 		go func() {
@@ -125,7 +122,6 @@ func adSeeHandle(c *server.StupidContext) {
 	conn.Send("HSET", rconst.HashMoneyPrefix+playerid, rconst.FieldMoneyTotal, totalnum)
 	conn.Send("SETEX", rconst.StringMoneyRemainSessNumPrefix+playerid, gfunc.TomorrowZeroRemain(), remainseenum)
 	conn.Send("SETEX", rconst.StringDataDayEarningsPrefix+nowkey, 2*24*3600, todayall)
-	conn.Send("SET", rconst.StringDataEarnings, historyall)
 	conn.Send("SETEX", rconst.StringDataDayAdNumPrefix+nowkey, 2*24*3600, todayadnum)
 	_, err = conn.Do("EXEC")
 	if err != nil {
