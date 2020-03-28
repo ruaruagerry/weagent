@@ -22,11 +22,11 @@ import (
 )
 
 type entranceRsp struct {
-	YestardayAll   float32 `json:"yestardayall"`
-	HistoryAll     float32 `json:"historyall"`
-	TodayAdNum     int32   `json:"todayadnum"`
-	TodayOnlineNum int32   `json:"todayonlinenum"`
-	TodayAll       float32 `json:"todayall"`
+	YestardayAll   float32 `json:"yestardayall"`   // 昨日全网收益（单位元）
+	HistoryAll     float32 `json:"historyall"`     // 历史全网收益（单位元）
+	TodayAdNum     int32   `json:"todayadnum"`     // 今日广告总数
+	TodayOnlineNum int32   `json:"todayonlinenum"` // 今日在线总数
+	TodayAll       float32 `json:"todayall"`       // 今日全网收益（单位元）
 }
 
 func entranceHandle(c *server.StupidContext) {
