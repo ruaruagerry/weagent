@@ -39,10 +39,13 @@ func scoreRankHandle(c *server.StupidContext) {
 	conn := c.RedisConn
 	playerid := c.UserID
 
+	// todo test
+	playerid = "2"
+
 	// redis multi get
 	conn.Send("MULTI")
-	conn.Send("ZRANGE", rconst.ZSetGameRank, 0, gconst.RankMaxIndexConfig, "withscores")
-	conn.Send("ZRANK", rconst.ZSetGameRank, playerid)
+	conn.Send("ZREVRANGE", rconst.ZSetGameRank, 0, gconst.RankMaxIndexConfig, "withscores")
+	conn.Send("ZREVRANK", rconst.ZSetGameRank, playerid)
 	conn.Send("ZSCORE", rconst.ZSetGameRank, playerid)
 	redisMDArray, err := redis.Values(conn.Do("EXEC"))
 	if err != nil {
