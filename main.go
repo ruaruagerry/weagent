@@ -16,6 +16,7 @@ import (
 
 	_ "weagent/handles/auth"
 	_ "weagent/handles/data"
+	_ "weagent/handles/game"
 	_ "weagent/handles/money"
 	_ "weagent/handles/phone"
 	_ "weagent/handles/setup"

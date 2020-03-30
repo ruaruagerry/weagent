@@ -5,6 +5,6 @@ import (
 )
 
 func init() {
-	server.RegisterGetHandle("/setup/real/get", realGetHandle)        // 获取实名认证信息
-	server.RegisterPostHandle("/setup/real/modify", realModifyHandle) // 修改实名认证信息
+	server.RegisterGetHandleNoUserID("/setup/real/get", realGetHandle)        // 获取实名认证信息
+	server.RegisterPostHandleNoUserID("/setup/real/modify", realModifyHandle) // 修改实名认证信息
 }

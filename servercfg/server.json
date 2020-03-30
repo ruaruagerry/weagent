@@ -6,17 +6,17 @@
     // 服务器实例GUID，必须确保唯一(为了兼容旧的web平台,暂时使用int类型)
     "guid": 1,
     // redis服务器地址
-    "redis_server": "47.106.147.185:6381",
+    "redis_server": "192.168.199.241:6379",
     // mysql服务器信息
     "db": {
         "dbName": "weagent",
-        "dbIP": "47.106.147.185:3306",
+        "dbIP": "192.168.199.241:3306",
         "dbUser": "root",
         "dbPassword": "123456"
     },
     "db_log": {
         "dbName": "weagentlog",
-        "dbIP": "47.106.147.185:3306",
+        "dbIP": "192.168.199.241:3306",
         "dbUser": "root",
         "dbPassword": "123456"
     },

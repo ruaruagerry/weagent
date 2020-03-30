@@ -3,6 +3,7 @@ package game
 import (
 	"encoding/json"
 	"weagent/gconst"
+	"weagent/gfunc"
 	"weagent/pb"
 	"weagent/rconst"
 	"weagent/server"
@@ -13,6 +14,10 @@ import (
 
 type scoreUpdateReq struct {
 	Score int32 `json:"score"`
+}
+
+type scoreUpdateRsp struct {
+	Num int32 `json:"num"`
 }
 
 func scoreUpdateHandle(c *server.StupidContext) {
@@ -63,6 +68,7 @@ func scoreUpdateHandle(c *server.StupidContext) {
 	// redis multi get
 	conn.Send("MULTI")
 	conn.Send("ZSCORE", rconst.ZSetGameRank, playerid)
+	conn.Send("GET", rconst.StringGameRebirthNumPrefix+playerid)
 	redisMDArray, err = redis.Values(conn.Do("EXEC"))
 	if err != nil {
 		httpRsp.Result = proto.Int32(int32(gconst.ErrRedis))
@@ -72,25 +78,52 @@ func scoreUpdateHandle(c *server.StupidContext) {
 	}
 
 	curscore, _ := redis.Int(redisMDArray[0], nil)
+	rebirthnum, err := redis.Int(redisMDArray[1], nil)
 
 	// do something
-	if req.Score > int32(curscore) {
-		// redis multi set
-		conn.Send("MULTI")
-		conn.Send("ZADD", rconst.ZSetGameRank, req.Score, playerid)
-		_, err = conn.Do("EXEC")
-		if err != nil {
-			httpRsp.Result = proto.Int32(int32(gconst.ErrRedis))
-			httpRsp.Msg = proto.String("统一存储缓存操作失败")
-			log.Errorf("code:%d msg:%s exec err, err:%s", httpRsp.GetResult(), httpRsp.GetMsg(), err.Error())
-			return
-		}
-
+	isupdaterebirth := false
+	if err != nil {
+		isupdaterebirth = true
+		// 初次生成
+		rebirthnum = gconst.GameRebirthNumConfig
 	}
 
-	httpRsp.Result = proto.Int32(int32(gconst.Success))
+	isupdatescore := false
+	if req.Score > int32(curscore) {
+		isupdatescore = true
+	}
 
-	log.Info("scoreUpdateHandle rsp, result:", httpRsp.GetResult())
+	// redis multi set
+	conn.Send("MULTI")
+	if isupdaterebirth {
+		conn.Send("SETEX", rconst.StringGameRebirthNumPrefix+playerid, gfunc.TomorrowZeroRemain(), rebirthnum)
+	}
+	if isupdatescore {
+		conn.Send("ZADD", rconst.ZSetGameRank, req.Score, playerid)
+	}
+	_, err = conn.Do("EXEC")
+	if err != nil {
+		httpRsp.Result = proto.Int32(int32(gconst.ErrRedis))
+		httpRsp.Msg = proto.String("统一存储缓存操作失败")
+		log.Errorf("code:%d msg:%s exec err, err:%s", httpRsp.GetResult(), httpRsp.GetMsg(), err.Error())
+		return
+	}
+
+	// rsp
+	rsp := &scoreUpdateRsp{
+		Num: int32(rebirthnum),
+	}
+	data, err := json.Marshal(rsp)
+	if err != nil {
+		httpRsp.Result = proto.Int32(int32(gconst.ErrParse))
+		httpRsp.Msg = proto.String("返回信息marshal解析失败")
+		log.Errorf("code:%d msg:%s json marshal err, err:%s", httpRsp.GetResult(), httpRsp.GetMsg(), err.Error())
+		return
+	}
+	httpRsp.Result = proto.Int32(int32(gconst.Success))
+	httpRsp.Data = data
+
+	log.Info("scoreUpdateHandle rsp, rsp:", string(data))
 
 	return
 }
