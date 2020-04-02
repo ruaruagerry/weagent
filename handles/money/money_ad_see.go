@@ -90,6 +90,7 @@ func adSeeHandle(c *server.StupidContext) {
 
 	// 超出最大广告收益次数，不做收益计算
 	todayadnum++
+	adseenum++
 	if remainseenum > 0 {
 		remainseenum--
 		moneynum += seeearnings

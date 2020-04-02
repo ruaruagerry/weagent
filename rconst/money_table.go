@@ -5,7 +5,7 @@ const (
 	HashMoneyConfig = "weagent:money:config"
 	// FieldMoneyConfigMaxAdNum 最大广告收益次数
 	FieldMoneyConfigMaxAdNum = "maxadnum"
-	// FieldMoneyConfigSeeEarnings 看广告收益
+	// FieldMoneyConfigSeeEarnings 看广告收益（单位分）
 	FieldMoneyConfigSeeEarnings = "seeearnings"
 
 	// StringMoneyRemainSessNumPrefix 当日剩余观看广告次数
