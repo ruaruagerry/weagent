@@ -15,8 +15,14 @@ type adRecordReq struct {
 	End   int32 `json:"end"`
 }
 
+type adRecordItem struct {
+	Earning    int64  `json:"earning"`    // 收益
+	Money      int64  `json:"money"`      // 当前余额
+	CreateTime string `json:"createtime"` // 创建时间
+}
+
 type adRecordRsp struct {
-	AdRecords []*tables.Adrecord `json:"adrecords"`
+	AdRecords []*adRecordItem `json:"adrecords"`
 }
 
 func adRecordHandle(c *server.StupidContext) {
@@ -36,7 +42,7 @@ func adRecordHandle(c *server.StupidContext) {
 		return
 	}
 
-	log.Info("getoutRecordHandle enter, req:", string(c.Body))
+	log.Info("adRecordHandle enter, req:", string(c.Body))
 
 	start := int(req.Start)
 	end := int(req.End)
@@ -61,8 +67,18 @@ func adRecordHandle(c *server.StupidContext) {
 
 	// rsp
 	rsp := &adRecordRsp{
-		AdRecords: adrecords,
+		AdRecords: []*adRecordItem{},
 	}
+	for _, v := range adrecords {
+		tmp := &adRecordItem{
+			Money:      v.AdMoney,
+			CreateTime: v.CreateTime.Format("2006-01-02"),
+			Earning:    v.Earnings,
+		}
+
+		rsp.AdRecords = append(rsp.AdRecords, tmp)
+	}
+
 	data, err := json.Marshal(rsp)
 	if err != nil {
 		httpRsp.Result = proto.Int32(int32(gconst.ErrParse))
@@ -73,7 +89,7 @@ func adRecordHandle(c *server.StupidContext) {
 	httpRsp.Result = proto.Int32(int32(gconst.Success))
 	httpRsp.Data = data
 
-	log.Info("getoutRecordHandle rsp, rsp:", string(data))
+	log.Info("adRecordHandle rsp, rsp:", string(data))
 
 	return
 }

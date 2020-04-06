@@ -15,8 +15,14 @@ type getoutRecordReq struct {
 	End   int32 `json:"end"`
 }
 
+type getoutRecordItem struct {
+	GetoutMoney int64  `json:"getoutmoney"`
+	CreateTime  string `json:"createtime"`
+	Status      string `json:"status"`
+}
+
 type getoutRecordRsp struct {
-	GetoutRecords []*tables.Getoutrecord `json:"getoutrecords"`
+	GetoutRecords []*getoutRecordItem `json:"getoutrecords"`
 }
 
 func getoutRecordHandle(c *server.StupidContext) {
@@ -61,8 +67,18 @@ func getoutRecordHandle(c *server.StupidContext) {
 
 	// rsp
 	rsp := &getoutRecordRsp{
-		GetoutRecords: getoutrecords,
+		GetoutRecords: []*getoutRecordItem{},
 	}
+	for _, v := range getoutrecords {
+		tmp := &getoutRecordItem{
+			GetoutMoney: v.GetoutMoney,
+			CreateTime:  v.CreateTime.Format("2006-01-02"),
+			Status:      recordStatusForString(v.Status),
+		}
+
+		rsp.GetoutRecords = append(rsp.GetoutRecords, tmp)
+	}
+
 	data, err := json.Marshal(rsp)
 	if err != nil {
 		httpRsp.Result = proto.Int32(int32(gconst.ErrParse))
@@ -76,4 +92,21 @@ func getoutRecordHandle(c *server.StupidContext) {
 	log.Info("getoutRecordHandle rsp, rsp:", string(data))
 
 	return
+}
+
+func recordStatusForString(status int32) string {
+	statusstr := ""
+
+	switch status {
+	case tables.GetoutStatusReview:
+		statusstr = "审核中"
+	case tables.GetoutStatusRefused:
+		statusstr = "审核拒绝"
+	case tables.GetoutStatusSuccess:
+		statusstr = "提现成功"
+	case tables.GetoutStatusFailed:
+		statusstr = "提现失败"
+	}
+
+	return statusstr
 }
