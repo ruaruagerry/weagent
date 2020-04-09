@@ -5,6 +5,8 @@ import (
 )
 
 func init() {
+	/* 服务器的金币全部都以分为单位 */
+
 	server.RegisterGetHandleNoUserID("/money/ad/see", adSeeHandle)                // 查看广告上报
 	server.RegisterGetHandleNoUserID("/money/ad/click", adClickHandle)            // 点击广告上报
 	server.RegisterPostHandleNoUserID("/money/ad/record", adRecordHandle)         // 查看广告收益记录

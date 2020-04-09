@@ -16,9 +16,9 @@ type adRecordReq struct {
 }
 
 type adRecordItem struct {
-	Earning    int64  `json:"earning"`    // 收益
-	Money      int64  `json:"money"`      // 当前余额
-	CreateTime string `json:"createtime"` // 创建时间
+	Earning    float32 `json:"earning"`    // 收益
+	Money      float32 `json:"money"`      // 当前余额
+	CreateTime string  `json:"createtime"` // 创建时间
 }
 
 type adRecordRsp struct {
@@ -71,9 +71,9 @@ func adRecordHandle(c *server.StupidContext) {
 	}
 	for _, v := range adrecords {
 		tmp := &adRecordItem{
-			Money:      v.AdMoney,
+			Money:      float32(v.AdMoney) / float32(100),
 			CreateTime: v.CreateTime.Format("2006-01-02"),
-			Earning:    v.Earnings,
+			Earning:    float32(v.Earnings) / float32(100),
 		}
 
 		rsp.AdRecords = append(rsp.AdRecords, tmp)

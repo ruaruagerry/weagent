@@ -14,7 +14,7 @@ import (
 )
 
 type getoutApplyReq struct {
-	GetoutMoney int64 `json:"getoutmoney"`
+	GetoutMoney int64 `json:"getoutmoney"` // 取的钱，单位元
 }
 
 func getoutApplyHandle(c *server.StupidContext) {
@@ -44,6 +44,8 @@ func getoutApplyHandle(c *server.StupidContext) {
 		log.Errorf("code:%d msg:%s getoutmoney is invalid, getoutmoney:%d", httpRsp.GetResult(), httpRsp.GetMsg())
 		return
 	}
+	// 元转成分
+	getoutmoney := req.GetoutMoney * 100
 
 	db := c.DbConn
 	conn := c.RedisConn
@@ -87,20 +89,19 @@ func getoutApplyHandle(c *server.StupidContext) {
 
 	name, _ := redis.String(redisMDArray[0], nil)
 	moneynum, _ := redis.Int64(redisMDArray[1], nil)
-
-	if moneynum < req.GetoutMoney {
+	if moneynum < getoutmoney {
 		httpRsp.Result = proto.Int32(int32(gconst.ErrMoneyNotEnough))
 		httpRsp.Msg = proto.String("提现金额不足")
-		log.Errorf("code:%d msg:%s money not enough, moneynum:%d getout:%d", httpRsp.GetResult(), httpRsp.GetMsg(), moneynum, req.GetoutMoney)
+		log.Errorf("code:%d msg:%s money not enough, moneynum:%d getout:%d", httpRsp.GetResult(), httpRsp.GetMsg(), moneynum, getoutmoney)
 		return
 	}
 
-	moneynum -= req.GetoutMoney
+	moneynum -= getoutmoney
 
 	// 插入提现记录
 	getoutrecord := &tables.Getoutrecord{
 		ID:          playerid,
-		GetoutMoney: req.GetoutMoney,
+		GetoutMoney: getoutmoney,
 		CreateTime:  nowtime,
 		Status:      tables.GetoutStatusReview,
 		Name:        name,
