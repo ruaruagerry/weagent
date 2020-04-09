@@ -16,9 +16,9 @@ type getoutRecordReq struct {
 }
 
 type getoutRecordItem struct {
-	GetoutMoney int64  `json:"getoutmoney"`
-	CreateTime  string `json:"createtime"`
-	Status      string `json:"status"`
+	GetoutMoney float32 `json:"getoutmoney"`
+	CreateTime  string  `json:"createtime"`
+	Status      string  `json:"status"`
 }
 
 type getoutRecordRsp struct {
@@ -71,7 +71,7 @@ func getoutRecordHandle(c *server.StupidContext) {
 	}
 	for _, v := range getoutrecords {
 		tmp := &getoutRecordItem{
-			GetoutMoney: v.GetoutMoney,
+			GetoutMoney: float32(v.GetoutMoney) / float32(100),
 			CreateTime:  v.CreateTime.Format("2006-01-02"),
 			Status:      recordStatusForString(v.Status),
 		}
