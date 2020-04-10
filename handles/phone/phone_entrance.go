@@ -12,7 +12,8 @@ import (
 )
 
 type entranceRsp struct {
-	Remain int32 `json:"remain"`
+	Remain int32  `json:"remain"`
+	Phone  string `json:"phone"`
 }
 
 func entranceHandle(c *server.StupidContext) {
@@ -31,6 +32,7 @@ func entranceHandle(c *server.StupidContext) {
 	// redis multi get
 	conn.Send("MULTI")
 	conn.Send("TTL", rconst.StringPhoneGetCodeTagPrefix+playerid)
+	conn.Send("HGET", rconst.HashAccountPrefix+playerid, rconst.FieldAccPhone)
 	redisMDArray, err := redis.Values(conn.Do("EXEC"))
 	if err != nil {
 		httpRsp.Result = proto.Int32(int32(gconst.ErrRedis))
@@ -39,8 +41,10 @@ func entranceHandle(c *server.StupidContext) {
 		return
 	}
 
-	// do something
 	remain, _ := redis.Int(redisMDArray[0], nil)
+	phone, _ := redis.String(redisMDArray[1], nil)
+
+	// do something
 	if remain < 0 {
 		remain = 0
 	}
@@ -48,6 +52,7 @@ func entranceHandle(c *server.StupidContext) {
 	// rsp
 	rsp := &entranceRsp{
 		Remain: int32(remain),
+		Phone:  phone,
 	}
 	data, err := json.Marshal(rsp)
 	if err != nil {

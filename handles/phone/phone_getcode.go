@@ -15,6 +15,10 @@ type getcodeReq struct {
 	Phone string `json:"phone"`
 }
 
+type getcodeRsp struct {
+	Remain int32 `json:"remain"`
+}
+
 func getcodeHandle(c *server.StupidContext) {
 	log := c.Log.WithField("func", "phone.getcodeHandle")
 
@@ -103,9 +107,20 @@ func getcodeHandle(c *server.StupidContext) {
 		return
 	}
 
+	rsp := &getcodeRsp{
+		Remain: int32(getCodeInterval),
+	}
+	data, err := json.Marshal(rsp)
+	if err != nil {
+		httpRsp.Result = proto.Int32(int32(gconst.ErrParse))
+		httpRsp.Msg = proto.String("返回信息marshal解析失败")
+		log.Errorf("code:%d msg:%s json marshal err, err:%s", httpRsp.GetResult(), httpRsp.GetMsg(), err.Error())
+		return
+	}
 	httpRsp.Result = proto.Int32(int32(gconst.Success))
+	httpRsp.Data = data
 
-	log.Info("getcodeHandle rsp, result:", httpRsp.GetResult())
+	log.Info("getcodeHandle rsp, rsp:", string(data))
 
 	return
 }
