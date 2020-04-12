@@ -14,5 +14,5 @@ import (
 )
 
 func init() {
-	server.RegisterGetHandleNoUserID("/data/entrance", entranceHandle) // 分红主界面
+	server.RegisterGetHandle("/data/entrance", entranceHandle) // 分红主界面
 }

@@ -24,7 +24,7 @@ func realGetHandle(c *server.StupidContext) {
 	}
 	defer c.WriteJSONRsp(&httpRsp)
 
-	log.Info("helloHandle enter")
+	log.Info("realGetHandle enter")
 
 	conn := c.RedisConn
 	playerid := c.UserID

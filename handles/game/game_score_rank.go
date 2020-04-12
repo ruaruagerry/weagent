@@ -39,9 +39,6 @@ func scoreRankHandle(c *server.StupidContext) {
 	conn := c.RedisConn
 	playerid := c.UserID
 
-	// todo test
-	playerid = "2"
-
 	// redis multi get
 	conn.Send("MULTI")
 	conn.Send("ZREVRANGE", rconst.ZSetGameRank, 0, gconst.RankMaxIndexConfig, "withscores")
