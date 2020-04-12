@@ -11,13 +11,14 @@ import (
 	"github.com/gomodule/redigo/redis"
 )
 
-type bindReq struct {
-	Phone string `json:"phone"`
-	Code  string `json:"code"`
+type modifyBindReq struct {
+	OldPhone string `json:"oldphone"`
+	Phone    string `json:"phone"`
+	Code     string `json:"code"`
 }
 
-func bindHandle(c *server.StupidContext) {
-	log := c.Log.WithField("func", "phone.bindHandle")
+func modifyBindHandle(c *server.StupidContext) {
+	log := c.Log.WithField("func", "phone.modifyBindHandle")
 
 	httpRsp := pb.HTTPResponse{
 		Result: proto.Int32(int32(gconst.UnknownError)),
@@ -25,7 +26,7 @@ func bindHandle(c *server.StupidContext) {
 	defer c.WriteJSONRsp(&httpRsp)
 
 	// req
-	req := &bindReq{}
+	req := &modifyBindReq{}
 	if err := json.Unmarshal(c.Body, req); err != nil {
 		httpRsp.Result = proto.Int32(int32(gconst.ErrParse))
 		httpRsp.Msg = proto.String("请求信息解析失败")
@@ -33,14 +34,14 @@ func bindHandle(c *server.StupidContext) {
 		return
 	}
 
-	if req.Phone == "" || req.Code == "" {
+	log.Info("helloHandle enter, req:", string(c.Body))
+
+	if req.Phone == "" || req.Code == "" || req.OldPhone == "" {
 		httpRsp.Result = proto.Int32(int32(gconst.ErrParamNil))
 		httpRsp.Msg = proto.String("请求参数为空")
 		log.Errorf("code:%d msg:%s param nil", httpRsp.GetResult(), httpRsp.GetMsg())
 		return
 	}
-
-	log.Info("bindHandle enter, req:", string(c.Body))
 
 	conn := c.RedisConn
 	playerid := c.UserID
@@ -59,7 +60,6 @@ func bindHandle(c *server.StupidContext) {
 		return
 	}
 
-	// 验证码
 	msgbyte, _ := redis.Bytes(redisMDArray[0], nil)
 	myphone, _ := redis.String(redisMDArray[1], nil)
 	openid, _ := redis.String(redisMDArray[2], nil)
@@ -80,10 +80,10 @@ func bindHandle(c *server.StupidContext) {
 		return
 	}
 
-	if myphone != "" {
+	if myphone != req.OldPhone {
 		httpRsp.Result = proto.Int32(int32(gconst.ErrPhoneAlreadyBind))
-		httpRsp.Msg = proto.String("已绑定手机号码")
-		log.Errorf("code:%d msg:%s, already bind phoneno, phonno:%s", httpRsp.GetResult(), httpRsp.GetMsg(), myphone)
+		httpRsp.Msg = proto.String("旧手机号码不对")
+		log.Errorf("code:%d msg:%s, oldphone is err myphone:%s", httpRsp.GetResult(), httpRsp.GetMsg(), myphone)
 		return
 	}
 
@@ -112,6 +112,7 @@ func bindHandle(c *server.StupidContext) {
 	}
 	conn.Send("HSET", rconst.HashAccountPrefix+playerid, rconst.FieldAccPhone, req.Phone)
 	conn.Send("SADD", rconst.SetPhoneHasBinded, req.Phone)
+	conn.Send("SREM", rconst.SetPhoneHasBinded, req.OldPhone)
 	conn.Send("DEL", rconst.StringPhoneCodePrefix+playerid)
 	_, err = conn.Do("EXEC")
 	if err != nil {
@@ -124,7 +125,7 @@ func bindHandle(c *server.StupidContext) {
 	// rsp
 	httpRsp.Result = proto.Int32(int32(gconst.Success))
 
-	log.Info("bindHandle rsp, result:", httpRsp.GetResult())
+	log.Info("modifyBindHandle rsp, result:", httpRsp.GetResult())
 
 	return
 }

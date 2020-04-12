@@ -31,7 +31,7 @@ type loginRsp struct {
 	UserInfo *loginUserInfo `json:"userinfo"`
 }
 
-func loginHandle(c *server.StupidContext) {
+func wxLoginHandle(c *server.StupidContext) {
 	log := c.Log.WithField("func", "auth.loginHandle")
 
 	httpRsp := pb.HTTPResponse{
@@ -106,13 +106,15 @@ func loginHandle(c *server.StupidContext) {
 		}
 	} else {
 		row = &tables.Account{
-			Nick:       userinfo.NickName,
-			Gender:     userinfo.Gender,
-			Portrait:   userinfo.AvatarURL,
-			OpenID:     userinfo.OpenID,
-			UnionID:    userinfo.UnionID,
-			SessionKey: loadAccessTokenReply.SessionKey,
-			CreateTime: nowtime,
+			Nick:          userinfo.NickName,
+			Gender:        userinfo.Gender,
+			Portrait:      userinfo.AvatarURL,
+			OpenID:        userinfo.OpenID,
+			UnionID:       userinfo.UnionID,
+			SessionKey:    loadAccessTokenReply.SessionKey,
+			CreateTime:    nowtime,
+			LastLoginTime: nowtime,
+			Channel:       tables.ChannelTypeWx,
 		}
 		_, err := db.Insert(row)
 		if err != nil {
@@ -134,7 +136,8 @@ func loginHandle(c *server.StupidContext) {
 		rconst.FieldAccImage, row.Portrait,
 		rconst.FieldAccGender, row.Gender,
 		rconst.FieldAccOpenID, row.OpenID,
-		rconst.FieldAccUnionID, row.UnionID)
+		rconst.FieldAccUnionID, row.UnionID,
+		rconst.FieldAccChannel, tables.ChannelTypeWx)
 	conn.Send("SADD", rconst.SetUsers, playerid)
 	if row.OpenID != "" {
 		conn.Send("HMSET", rconst.HashAccountPrefix+row.OpenID,

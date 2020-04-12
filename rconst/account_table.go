@@ -21,6 +21,8 @@ const (
 	FiledAccLoginTime = "logintime"
 	// FieldAccPhone 手机号
 	FieldAccPhone = "phone"
+	// FieldAccChannel 登陆方式
+	FieldAccChannel = "channel"
 
 	// HashAccountOpenIDPrefix + openid
 	HashAccountOpenIDPrefix = "weagent:acc:openid:"

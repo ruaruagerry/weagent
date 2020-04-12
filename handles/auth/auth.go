@@ -11,6 +11,11 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+/* 测试账号登陆相关 */
+const (
+	TestPortrait = "https://ss0.bdstatic.com/94oJfD_bAAcT8t7mm9GUKT-xh_/timg?image&quality=100&size=b4000_4000&sec=1586685662&di=f02d4ae8f4a40e4d492153bf02c7c160&src=http://www.17qq.com/img_qqtouxiang/89531135.jpeg"
+)
+
 /* 微信登录相关 */
 const (
 	WXLoginURL = "https://api.weixin.qq.com/sns/jscode2session"
