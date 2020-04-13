@@ -100,13 +100,13 @@ func getcodeHandle(c *server.StupidContext) {
 	log.Info("## phone msg:", string(msgbyte))
 
 	// 发短信
-	// err = sendPhoneMsg(phoneno, phonecode)
-	// if err != nil {
-	// 	httpRsp.Result = proto.Int32(int32(gconst.ErrPhoneSendMsg))
-	// 	httpRsp.Msg = proto.String("发送手机短信失败")
-	// 	log.Errorf("code:%d msg:%s, send phone msg err, err:%s", httpRsp.GetResult(), httpRsp.GetMsg(), err.Error())
-	// 	return
-	// }
+	err = sendPhoneMsg(phoneno, phonecode)
+	if err != nil {
+		httpRsp.Result = proto.Int32(int32(gconst.ErrPhoneSendMsg))
+		httpRsp.Msg = proto.String("发送手机短信失败")
+		log.Errorf("code:%d msg:%s, send phone msg err, err:%s", httpRsp.GetResult(), httpRsp.GetMsg(), err.Error())
+		return
+	}
 
 	rsp := &getcodeRsp{
 		Remain: int32(getCodeInterval),
