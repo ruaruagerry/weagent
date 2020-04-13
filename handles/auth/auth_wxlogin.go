@@ -11,12 +11,17 @@ import (
 	"weagent/tables"
 
 	"github.com/golang/protobuf/proto"
+	"github.com/gomodule/redigo/redis"
 )
 
 type loginReq struct {
 	Code          string `json:"code"`
 	EncryptedData string `json:"encrypteddata"`
 	Iv            string `json:"iv"`
+}
+
+type clientInfo struct {
+	LatestVersion string `json:"latestversion"`
 }
 
 type loginUserInfo struct {
@@ -27,8 +32,9 @@ type loginUserInfo struct {
 }
 
 type loginRsp struct {
-	Token    string         `json:"token"`
-	UserInfo *loginUserInfo `json:"userinfo"`
+	Token      string         `json:"token"`
+	UserInfo   *loginUserInfo `json:"userinfo"`
+	ClientInfo *clientInfo    `json:"clientinfo"`
 }
 
 func wxLoginHandle(c *server.StupidContext) {
@@ -53,6 +59,19 @@ func wxLoginHandle(c *server.StupidContext) {
 	db := c.DbConn
 	conn := c.RedisConn
 	nowtime := time.Now()
+
+	// redis multi get
+	conn.Send("MULTI")
+	conn.Send("HGET", rconst.HashClient, rconst.FieldClientLastestVersion)
+	redisMDArray, err := redis.Values(conn.Do("EXEC"))
+	if err != nil {
+		httpRsp.Result = proto.Int32(int32(gconst.ErrRedis))
+		httpRsp.Msg = proto.String("统一获取缓存操作失败")
+		log.Errorf("code:%d msg:%s redisMDArray Values err, err:%s", httpRsp.GetResult(), httpRsp.GetMsg(), err.Error())
+		return
+	}
+
+	clientlatestversion, _ := redis.String(redisMDArray[0], nil)
 
 	// account处理
 	loadAccessTokenReply, err := WeixinGetUserInfo(req.Code)
@@ -162,9 +181,13 @@ func wxLoginHandle(c *server.StupidContext) {
 		Gender:    row.Gender,
 		AvatarURL: row.Portrait,
 	}
+	rspclientinfo := &clientInfo{
+		LatestVersion: clientlatestversion,
+	}
 	rsp := &loginRsp{
-		Token:    token,
-		UserInfo: rspuserinfo,
+		Token:      token,
+		UserInfo:   rspuserinfo,
+		ClientInfo: rspclientinfo,
 	}
 	data, err := json.Marshal(rsp)
 	if err != nil {

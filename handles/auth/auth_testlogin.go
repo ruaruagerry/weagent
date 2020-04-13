@@ -11,10 +11,15 @@ import (
 	"weagent/tables"
 
 	"github.com/golang/protobuf/proto"
+	"github.com/gomodule/redigo/redis"
 )
 
 type testLoginReq struct {
 	Account string `json:"account"`
+}
+
+type testClientInfo struct {
+	LatestVersion string `json:"latestversion"`
 }
 
 type testLoginUserInfo struct {
@@ -25,8 +30,9 @@ type testLoginUserInfo struct {
 }
 
 type testLoginRsp struct {
-	Token    string             `json:"token"`
-	UserInfo *testLoginUserInfo `json:"userinfo"`
+	Token      string             `json:"token"`
+	UserInfo   *testLoginUserInfo `json:"userinfo"`
+	ClientInfo *testClientInfo    `json:"clientinfo"`
 }
 
 func testLoginHandle(c *server.StupidContext) {
@@ -52,9 +58,22 @@ func testLoginHandle(c *server.StupidContext) {
 	conn := c.RedisConn
 	nowtime := time.Now()
 
+	// redis multi get
+	conn.Send("MULTI")
+	conn.Send("HGET", rconst.HashClient, rconst.FieldClientLastestVersion)
+	redisMDArray, err := redis.Values(conn.Do("EXEC"))
+	if err != nil {
+		httpRsp.Result = proto.Int32(int32(gconst.ErrRedis))
+		httpRsp.Msg = proto.String("统一获取缓存操作失败")
+		log.Errorf("code:%d msg:%s redisMDArray Values err, err:%s", httpRsp.GetResult(), httpRsp.GetMsg(), err.Error())
+		return
+	}
+
+	clientlatestversion, _ := redis.String(redisMDArray[0], nil)
+
 	// db操作
 	row := &tables.Account{OpenID: req.Account}
-	_, err := db.Get(row)
+	_, err = db.Get(row)
 	if err != nil {
 		httpRsp.Result = proto.Int32(int32(gconst.ErrDB))
 		httpRsp.Msg = proto.String("查询用户信息失败")
@@ -122,15 +141,19 @@ func testLoginHandle(c *server.StupidContext) {
 	token := server.GenTK(playerid)
 
 	// rsp
-	rspuserinfo := &loginUserInfo{
+	rspuserinfo := &testLoginUserInfo{
 		ID:        playerid,
 		NickName:  row.Nick,
 		Gender:    row.Gender,
 		AvatarURL: row.Portrait,
 	}
-	rsp := &loginRsp{
-		Token:    token,
-		UserInfo: rspuserinfo,
+	rspclientinfo := &testClientInfo{
+		LatestVersion: clientlatestversion,
+	}
+	rsp := &testLoginRsp{
+		Token:      token,
+		UserInfo:   rspuserinfo,
+		ClientInfo: rspclientinfo,
 	}
 	data, err := json.Marshal(rsp)
 	if err != nil {
