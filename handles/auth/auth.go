@@ -21,8 +21,8 @@ const (
 	WXLoginURL = "https://api.weixin.qq.com/sns/jscode2session"
 	// WXAppID     = "wxe9e3a15f9de9a419"
 	// WXAppSecret = "32dfe47807b5961ff26d57c63a2bb936"
-	WXAppID     = "wxe6dbc93d12e0240a"
-	WXAppSecret = "7545cb3d76732c85f3d6a23875a51fc5"
+	WXAppID     = "wx876f4b16e2b51d08"
+	WXAppSecret = "8c2abcf92ac20cc9f7f8f8e2c5a6d1ef"
 )
 
 // LoadAccessTokenReply 微信拉取access token回复
